@@ -59,5 +59,13 @@
         <activity
             android:name=".activity.QuestionnaireActivity"
             android:parentActivityName=".activity.PatientListActivity"></activity>
+
+        <service android:name=".auth.account.AccountService">
+            <intent-filter>
+                <action android:name="android.accounts.AccountAuthenticator" />
+            </intent-filter>
+            <meta-data android:name="android.accounts.AccountAuthenticator"
+                android:resource="@xml/authenticator" />
+        </service>
     </application>
 </manifest>

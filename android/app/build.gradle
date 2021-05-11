@@ -3,6 +3,7 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: "com.github.kt3k.coveralls"
 apply plugin: 'jacoco'
+apply plugin: 'kotlin-android-extensions'
 
 jacoco {
     toolVersion = versions.jacoco_tool
@@ -10,6 +11,9 @@ jacoco {
 
 android {
     compileSdkVersion sdk_versions.compile_sdk
+    dataBinding {
+        enabled true
+    }
     defaultConfig {
         applicationId "org.smartregister.fhircore"
         minSdkVersion sdk_versions.min_sdk
