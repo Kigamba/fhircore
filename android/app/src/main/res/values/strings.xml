@@ -36,7 +36,8 @@
     <string name="username_input_hint">Enter username</string>
     <string name="password_input_hint">Enter password</string>
     <string name="forgot_password_button_hint">Forgot password</string>
-    <string name="remember_password_button_hint">Remeber password</string>
+    <string name="remember_password_button_hint">Remember password</string>
+    <string name="login_error_message">Invalid username or password</string>
 
     <string name="str_next">Next &gt;&gt;</string>
     <string name="str_previous">&lt;&lt; Previous</string>
