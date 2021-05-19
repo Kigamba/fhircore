@@ -63,4 +63,5 @@ class FhirApplication : Application() {
     @JvmStatic
     fun fhirEngine(context: Context) = (context.applicationContext as FhirApplication).fhirEngine
   }
+
 }
