@@ -22,18 +22,14 @@ import androidx.work.Constraints
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.FhirEngineBuilder
-import com.google.android.fhir.sync.FhirDataSource
-import com.google.android.fhir.sync.PeriodicSyncConfiguration
-import com.google.android.fhir.sync.RepeatInterval
-import com.google.android.fhir.sync.SyncConfiguration
-import com.google.android.fhir.sync.SyncData
-import java.util.ArrayList
-import java.util.concurrent.TimeUnit
+import com.google.android.fhir.sync.*
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.api.HapiFhirService.Companion.create
 import org.smartregister.fhircore.data.FhirPeriodicSyncWorker
 import org.smartregister.fhircore.data.HapiFhirResourceDataSource
 import org.smartregister.fhircore.util.SharedPrefrencesHelper
+import java.util.*
+import java.util.concurrent.TimeUnit
 
 class FhirApplication : Application() {
 
