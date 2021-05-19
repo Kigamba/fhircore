@@ -20,7 +20,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -36,14 +35,20 @@ import com.google.android.fhir.FhirEngine
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.PatientDetailActivity
+import org.smartregister.fhircore.activity.QuestionnaireActivity
+import org.smartregister.fhircore.activity.RecordVaccineActivity
+import org.smartregister.fhircore.activity.USER_ID
 import org.smartregister.fhircore.adapter.PatientItemRecyclerViewAdapter
 import org.smartregister.fhircore.viewmodel.PatientListViewModel
 import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory
+import timber.log.Timber
 
 class PatientListFragment : Fragment() {
 
   private lateinit var patientListViewModel: PatientListViewModel
   private lateinit var fhirEngine: FhirEngine
+  private var search: String? = null
+  private val pageCount: Int = 7
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -57,7 +62,12 @@ class PatientListFragment : Fragment() {
     fhirEngine = FhirApplication.fhirEngine(requireContext())
 
     val recyclerView = view.findViewById<RecyclerView>(R.id.patient_list)
-    val adapter = PatientItemRecyclerViewAdapter(this::onPatientItemClicked)
+    val adapter =
+      PatientItemRecyclerViewAdapter(
+        this::onPatientItemClicked,
+        this::onNavigationClicked,
+        this::onRecordVaccineClicked
+      )
     recyclerView.adapter = adapter
 
     requireActivity().findViewById<TextView>(R.id.tv_sync).setOnClickListener {
@@ -74,11 +84,13 @@ class PatientListFragment : Fragment() {
         )
         .get(PatientListViewModel::class.java)
 
-    patientListViewModel.liveSearchedPatients.observe(
+    patientListViewModel.liveSearchedPaginatedPatients.observe(
       requireActivity(),
       {
-        Log.d("PatientListActivity", "Submitting ${it.count()} patient records")
-        adapter.submitList(it)
+        Timber.d("Submitting ${it.first.count()} patient records")
+        val list = ArrayList<Any>(it.first)
+        list.add(it.second)
+        adapter.submitList(list)
         adapter.notifyDataSetChanged()
       }
     )
@@ -90,15 +102,22 @@ class PatientListFragment : Fragment() {
           override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
           override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-            patientListViewModel.getSearchResults(s?.toString())
+            search = s?.toString()
+            patientListViewModel.searchResults(s?.toString(), 0, pageCount)
           }
 
           override fun afterTextChanged(s: Editable?) {}
         }
       )
 
-    patientListViewModel.getSearchResults()
+    patientListViewModel.searchResults(page = 0, pageSize = pageCount)
     super.onViewCreated(view, savedInstanceState)
+  }
+
+  // Click handler to help display the details about the patients from the list.
+  private fun onNavigationClicked(direction: NavigationDirection, currentPage: Int) {
+    val nextPage = currentPage + if (direction == NavigationDirection.NEXT) 1 else -1
+    patientListViewModel.searchResults(search, nextPage, pageCount)
   }
 
   // Click handler to help display the details about the patients from the list.
@@ -110,8 +129,18 @@ class PatientListFragment : Fragment() {
     this.startActivity(intent)
   }
 
+  private fun onRecordVaccineClicked(patientItem: PatientListViewModel.PatientItem) {
+    startActivity(
+      Intent(requireContext(), RecordVaccineActivity::class.java).apply {
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Record Vaccine")
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "record-vaccine.json")
+        putExtra(USER_ID, patientItem.logicalId)
+      }
+    )
+  }
+
   private fun syncResources() {
-    patientListViewModel.getSearchResults()
+    patientListViewModel.searchResults()
     Toast.makeText(requireContext(), "Syncing...", Toast.LENGTH_LONG).show()
     patientListViewModel.syncUpload()
   }

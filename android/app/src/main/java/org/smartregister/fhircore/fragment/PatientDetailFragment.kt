@@ -24,11 +24,11 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.fhir.FhirEngine
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.adapter.ObservationItemRecyclerViewAdapter
+import org.smartregister.fhircore.util.SharedPrefrencesHelper
 import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.viewmodel.PatientListViewModel
 import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory
@@ -39,16 +39,21 @@ import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory
  */
 class PatientDetailFragment : Fragment() {
 
+  var patitentId: String? = null
+  lateinit var rootView: View
+
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View? {
-    val rootView = inflater.inflate(R.layout.patient_detail, container, false)
+    rootView = inflater.inflate(R.layout.patient_detail, container, false)
 
-    val recyclerView: RecyclerView = rootView.findViewById(R.id.observation_list)
     val adapter = ObservationItemRecyclerViewAdapter()
-    recyclerView.adapter = adapter
+
+    // Commenting as we don't need this in Patient Detail Screen
+    /*val recyclerView: RecyclerView = rootView.findViewById(R.id.observation_list)
+    recyclerView.adapter = adapter*/
 
     val fhirEngine: FhirEngine = FhirApplication.fhirEngine(requireContext())
 
@@ -73,12 +78,34 @@ class PatientDetailFragment : Fragment() {
 
     arguments?.let {
       if (it.containsKey(ARG_ITEM_ID)) {
-        it.getString(ARG_ITEM_ID)?.let { it1 -> viewModel.getPatientItem(it1) }
+        it.getString(ARG_ITEM_ID)?.let { it1 ->
+          viewModel.getPatientItem(it1)
+          patitentId = it1
+        }
       }
     }
-    viewModel.getSearchResults()
+    viewModel.searchResults()
+
+    updateVaccineStatus()
 
     return rootView
+  }
+
+  private fun updateVaccineStatus() {
+    patitentId?.let {
+      val vaccineRecorded = SharedPrefrencesHelper.read(it, "")
+      vaccineRecorded?.let { it1 ->
+        if (it1.isNotEmpty()) {
+          val tvVaccineRecorded = rootView.findViewById<TextView>(R.id.vaccination_status)
+          tvVaccineRecorded.text = "Received $it1 dose 1"
+        }
+      }
+    }
+  }
+
+  override fun onResume() {
+    super.onResume()
+    updateVaccineStatus()
   }
 
   private fun setupPatientData(patient: PatientListViewModel.PatientItem?) {
