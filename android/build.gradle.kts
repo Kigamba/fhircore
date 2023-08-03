@@ -23,7 +23,10 @@ buildscript {
   }
 }
 
-plugins { id("org.jetbrains.dokka") version "1.8.20" }
+plugins { id("org.jetbrains.dokka") version "1.8.20"
+    /*id("com.android.test") version "7.1.3" apply false
+    id("org.jetbrains.kotlin.android") version "1.8.20" apply false*/
+}
 
 tasks.dokkaHtmlMultiModule {
   moduleName.set("OpenSRP")
